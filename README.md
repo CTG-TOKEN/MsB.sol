@@ -45,14 +45,13 @@ The contract also includes a function for opening payment channels between parti
 
 Benefits
 
-The implementation of our smart contract on top of the Bitcoin network provides several benefits, including:
+Fast transaction times: since the transactions are off-chain, they are much faster than on-chain transactions.
 
-Increased speed of transactions: By keeping transactions off-chain, the speed of transactions is greatly increased.
+Increased privacy: since the transactions are off-chain, they are not visible on the blockchain, which increases the privacy of the parties involved.
 
-Improved security: The use of multisignature wallets and payment channels greatly improves the security of transactions.
+Flexibility: the external oracle contract allows for greater flexibility in resolving disputes, as it can be customized to suit the needs of the parties involved.
 
-Reduced costs: The off-chain nature of transactions reduces the number of transactions that need to be confirmed on the blockchain, which reduces the costs associated with mining and other network fees.
-
+Security: the use of signatures and the integration of an external oracle contract provide an added layer of security, as they ensure that only the parties involved in the channel can initiate transactions and resolve disputes.
 Conclusion
 
 Our smart contract provides a solution to the limitations of the Bitcoin network by increasing the speed and security of transactions. By creating a lightning network and multisignature wallets on top of the Bitcoin network, we believe that our smart contract can play a significant role in the widespread adoption of Bitcoin and other blockchain-based platforms. We look forward to continuing to develop and refine our smart contract in the future, and we welcome feedback from the community on how to improve it.
