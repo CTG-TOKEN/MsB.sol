@@ -461,6 +461,65 @@ contract SecureSpeed {
 
     // Other functions such as updateDeposit, initiateTransaction, resolveDispute, closeChannel
 }
+pragma solidity ^0.11.0;
+
+contract SecureSpeed {
+    // Payment channel data structure
+    struct Channel {
+        address user1;
+        address user2;
+        uint deposit;
+        bool closed;
+    }
+    mapping (address => mapping (address => Channel)) private channels;
+
+    // External Oracle
+    address externalOracle;
+
+    //Transaction fee
+    uint fee = 0.01 ether;
+
+    // User experience variables
+    mapping(address => uint) public lastOpened;
+    mapping(address => uint) public numChannels;
+
+    constructor(address _externalOracle) public {
+        externalOracle = _externalOracle;
+    }
+
+    // Deposit function
+    function deposit(address user, uint value) public {
+        require(value > 0, "Deposit must be greater than 0");
+        openChannel(msg.sender, user, value);
+    }
+
+    function openChannel(address user1, address user2, uint value) private {
+        // Check if user1 has opened a channel with user2 recently
+        require(block.timestamp > lastOpened[user1] + 1 days, "User1 must wait before opening another channel with user2");
+        // Check if user1 has too many open channels
+        require(numChannels[user1] < 10, "User1 has too many open channels, please close some before opening a new one");
+        channels[user1][user2] = Channel({
+            user1: user1,
+            user2: user2,
+            deposit: value,
+            closed: false
+        });
+        lastOpened[user1] = block.timestamp;
+        numChannels[user1]++;
+    }
+
+    // Withdraw function
+    function withdraw(address user, uint value) public {
+        // Rest of the code for the withdraw function
+    }
+
+    // Other functions such as updateDeposit, initiateTransaction, resolveDispute, closeChannel
+
+    function closeChannel(address user1, address user2) private {
+        channels[user1][user2].closed = true;
+        numChannels[user1]--;
+    }
+}
 
 
 
