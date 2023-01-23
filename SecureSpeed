@@ -733,6 +733,63 @@ contract SecureSpeed {
         channels[user1][user2].deposit -= value;
     }
 }
+pragma solidity ^0.11.0;
+
+contract SecureSpeed {
+    // Payment channel data structure
+    struct Channel {
+        address user1;
+        address user2;
+        uint deposit;
+        bool closed;
+    }
+    mapping (address => mapping (address => Channel)) private channels;
+
+    // External Oracle
+    address externalOracle;
+
+    // Interoperability interfaces
+    interface ERC20 {
+        function approve(address spender, uint256 value) external returns (bool);
+        function transferFrom(address sender, address recipient, uint256 value) external returns (bool);
+        function balanceOf(address account) external view returns (uint256);
+    }
+    ERC20 public token;
+
+    constructor(address _tokenAddress, address _externalOracle) public {
+        require(_tokenAddress != address(0), "Invalid token address");
+        token = ERC20(_tokenAddress);
+        externalOracle = _externalOracle;
+    }
+
+    // Deposit function
+    function deposit(address user, uint value) public {
+        // Check if the user has enough tokens
+        require(token.balanceOf(msg.sender) >= value, "Insufficient token balance");
+        // Approve the contract to spend tokens on behalf of the user
+        require(token.approve(address(this), value), "Approval failed");
+        // Transfer the tokens from the user's account to the contract's account
+        require(token.transferFrom(msg.sender, address(this), value), "Token transfer failed");
+        openChannel(msg.sender, user, value);
+    }
+
+    // Other functions such as withdraw, updateDeposit, initiateTransaction, resolveDispute, closeChannel
+    function initiateTransaction(address user1, address user2, address recipient, uint value) public {
+        // Check if the transaction is valid
+        require(value > 0, "Transaction value must be greater than 0");
+        require(value <= channels[user1][user2].deposit, "Transaction value exceeds the deposit in the channel");
+        // Perform the transaction
+        require(token.transfer(recipient, value), "Transaction failed");
+        channels[user1][user2].deposit -= value;
+    }
+    
+    // Handle errors and exceptions
+    function handleError(address user, bytes memory message) private {
+        // Log the error message
+        emit ErrorLog(user, message);
+    }
+    event ErrorLog(address user, bytes memory message);
+}
 
 
 
