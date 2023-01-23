@@ -150,6 +150,16 @@ Fee revenue distribution: The contract may use a portion of the transaction fees
 
 Fee transparency: The contract includes mechanisms to make the fee structure transparent to users, such as displaying the transaction fee before a transaction is executed. This helps to ensure that users are aware of the fees they are paying and can make informed decisions about whether to use the contract.
 
+The SecureSpeed contract charges a small percentage of the total value of each payment as a transaction fee. The exact percentage may vary depending on the specific implementation of the contract, but it is typically between 0.01% to 1% of the total value of the payment. This percentage is used to cover the costs associated with executing the transaction and maintaining the contract.
+
+The maximum fee cap is typically set at a percentage of the total value of the payment that is higher than the fixed transaction fee, but still reasonable and fair. For example, it can be set at 5% of the total value of the payment. This ensures that users are not charged excessive fees for large payments.
+
+The fee discounts are typically offered to users who hold a certain amount of tokens or for users who make a large number of transactions. The percentage of the fee discount may vary depending on the specific implementation of the contract, but it typically ranges from 10% to 50%.
+
+In terms of revenue distribution, typically, a percentage of the transaction fees is used to reward the investors and the rest is used for the further development and maintenance of the contract. For example, 80% of the transaction fees may be used to reward the investors and 20% may be used for further development and maintenance of the contract.
+
+It's worth noting that the exact percentage values may vary based on the specific implementation of the contract, and these are examples of how the percentages may be set. The important thing is that the fee structure is transparent, fair, and reasonable for the users while ensuring that the contract is sustainable and secure.
+
 Overall, the SecureSpeed contract includes a fee structure that allows it to charge transaction fees to its users. The fee structure is designed to balance the needs of the contract with the needs of the users, and it includes features such as fixed transaction fee, fee cap, fee discount, fee revenue distribution and fee transparency which helps to ensure that the transaction fees are reasonable, affordable, and transparent for the users.
 
 # Paying Mechanism
