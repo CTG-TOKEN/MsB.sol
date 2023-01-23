@@ -187,4 +187,3 @@ contract SecureSpeed {
     channels[user1][user2].deposit -= value;
     token.transfer(recipient, value);
 }
-
