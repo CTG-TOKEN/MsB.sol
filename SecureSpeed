@@ -187,4 +187,209 @@ contract SecureSpeed {
     channels[user1][user2].deposit -= value;
     token.transfer(recipient, value);
 }
+pragma solidity ^0.11.0;
+
+contract SecureSpeed {
+    // Payment channel data structure
+    struct Channel {
+        address user1;
+        address user2;
+        uint deposit;
+        bool closed;
+    }
+    mapping (address => mapping (address => Channel)) public channels;
+
+    // External Oracle
+    address externalOracle;
+
+    //Transaction fee
+    uint fee = 0.01;
+    uint maxFee = 5 ether;
+
+    // Token standard
+    ERC20 public token;
+
+    constructor(address _externalOracle, address _token) public {
+        externalOracle = _externalOracle;
+        token = ERC20(_token);
+    }
+
+    // Deposit function
+    function deposit(address user, uint value) public {
+        require(value > 0, "Deposit must be greater than 0");
+        require(token.transferFrom(msg.sender, address(this), value), "Transfer failed");
+        openChannel(msg.sender, user, value, block.timestamp + 1 days);
+    }
+
+    // Withdraw function
+    function withdraw(address user, uint value) public {
+        require(value > 0, "Withdrawal must be greater than 0");
+        require(!channels[msg.sender][user].closed, "Payment channel is closed");
+        require(channels[msg.sender][user].deposit >= value, "Insufficient funds in the channel");
+        channels[msg.sender][user].deposit -= value;
+        token.transfer(msg.sender, value);
+        if(channels[msg.sender][user].deposit == 0)
+            closeChannel(msg.sender, user);
+    }
+
+    // Update deposit function
+    function updateDeposit(address user, uint value) public {
+        require(value > 0, "Deposit must be greater than 0");
+        require(!channels[msg.sender][user].closed, "Payment channel is closed");
+        require(token.transferFrom(msg.sender, address(this), value), "Transfer failed");
+        updateChannel(msg.sender, user, value);
+    }
+
+    // Initiate transaction function
+    function initiateTransaction(address user1, address user2, address recipient, uint value, bytes memory signature1, bytes memory signature2) public {
+        require(!channels[user1][user2].closed, "Payment channel is closed");
+        executeTransaction(user1, user2, recipient, value, signature1, signature2);
+    }
+
+    // Resolve dispute function
+    function resolveDispute(address user1, address user2) public {
+        require(!channels[user1][user2].closed, "Payment channel is already closed");
+        require(msg.sender == user1 || msg.sender == user2, "Only parties involved in the channel can resolve a dispute");
+        // Check dispute resolution with external Oracle
+        (bool resolved, uint finalBalance) = externalOracle.call(abi.encodePacked("resolveDispute(address,address)", user1, user2));
+        require(resolved, "Dispute could not be resolved by the external Oracle");
+        // Transfer remaining funds to user1
+        token.transfer(user1, finalBalance);
+        closeChannel(user1, user2);
+    }
+
+    // Close channel function
+    function closeChannel(address user1, address user2) private {
+        channels[user1][user2].closed = true;
+    }
+    // Update channel function
+    function updateChannel(address user1, address user2, uint newDeposit) private {
+        require(channels[user1][user2].deposit + newDeposit >= channels[user1][user2].deposit, "New deposit must be greater than the existing deposit");
+        channels[user1][user2].deposit += newDeposit;
+    }
+    // Execute transaction function
+    function executeTransaction(address user1, address user2, address recipient, uint value, bytes memory signature1, bytes memory signature2) private {
+        require(channels[user1][user2].deposit >= value, "Insufficient funds in the channel");
+        require(value >= fee, "Transaction value is too low");
+        require(value <= channels[user1][user2].deposit, "Transaction value exceeds the deposit in the channel");
+        require(ecrecover(keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(abi.encodePacked(user1, user2, recipient, value)))), signature1) == user1, "Invalid signature from user1");
+        require(ecrecover(keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(abi.encodePacked(user1, user2, recipient, value)))), signature2) == user2, "Invalid signature from user2");
+        channels[user1][user2].deposit -= value;
+        token.transfer(recipient, value);
+    }
+}
+pragma solidity ^0.11.0;
+
+contract SecureSpeed {
+    // Payment channel data structure
+    struct Channel {
+        address user1;
+        address user2;
+        uint deposit;
+        bool closed;
+    }
+    mapping (address => mapping (address => Channel)) public channels;
+
+    // External Oracle
+    address externalOracle;
+
+    //Transaction fee
+    uint fee = 0.01;
+    uint maxFee = 5 ether;
+
+    // Token standard
+    ERC20 public token;
+
+    // Role-based access control (RBAC)
+    mapping (address => bool) public admin;
+
+    constructor(address _externalOracle, address _token) public {
+        externalOracle = _externalOracle;
+        token = ERC20(_token);
+    }
+
+    // Add admin function
+    function addAdmin(address _admin) public {
+        require(msg.sender == msg.sender, "Only the contract owner can add new admins");
+        admin[_admin] = true;
+    }
+
+    // Remove admin function
+    function removeAdmin(address _admin) public {
+        require(msg.sender == msg.sender, "Only the contract owner can remove admins");
+        admin[_admin] = false;
+    }
+
+    // Deposit function
+    function deposit(address user, uint value) public {
+        require(value > 0, "Deposit must be greater than 0");
+        require(token.transferFrom(msg.sender, address(this), value), "Transfer failed");
+        require(admin[msg.sender] == true, "Only admins can open payment channels");
+        openChannel(msg.sender, user, value, block.timestamp + 1 days);
+    }
+
+    // Withdraw function
+    function withdraw(address user, uint value)
+public {
+        require(value > 0, "Withdrawal must be greater than 0");
+        require(!channels[msg.sender][user].closed, "Payment channel is closed");
+        require(channels[msg.sender][user].deposit >= value, "Insufficient funds in the channel");
+        channels[msg.sender][user].deposit -= value;
+        token.transfer(msg.sender, value);
+        if(channels[msg.sender][user].deposit == 0)
+            closeChannel(msg.sender, user);
+    }
+
+    // Update deposit function
+    function updateDeposit(address user, uint value) public {
+        require(value > 0, "Deposit must be greater than 0");
+        require(!channels[msg.sender][user].closed, "Payment channel is closed");
+        require(token.transferFrom(msg.sender, address(this), value), "Transfer failed");
+        updateChannel(msg.sender, user, value);
+    }
+
+    // Initiate transaction function
+    function initiateTransaction(address user1, address user2, address recipient, uint value, bytes memory signature1, bytes memory signature2) public {
+        require(!channels[user1][user2].closed, "Payment channel is closed");
+        executeTransaction(user1, user2, recipient, value, signature1, signature2);
+    }
+
+    // Resolve dispute function
+    function resolveDispute(address user1, address user2) public {
+        require(!channels[user1][user2].closed, "Payment channel is already closed");
+        require(msg.sender == user1 || msg.sender == user2, "Only parties involved in the channel can resolve a dispute");
+        // Check dispute resolution with external Oracle
+        (bool resolved, uint finalBalance) = externalOracle.call(abi.encodePacked("resolveDispute(address,address)", user1, user2));
+        require(resolved, "Dispute could not be resolved by the external Oracle");
+        // Transfer remaining funds to user1
+        token.transfer(user1, finalBalance);
+        closeChannel(user1, user2);
+    }
+
+    // Close channel function
+    function closeChannel(address user1, address user2) private {
+        channels[user1][user2].closed = true;
+    }
+    // Update channel function
+    function updateChannel(address user1, address user2, uint newDeposit) private {
+        require(channels[user1][user2].deposit + newDeposit >= channels[user1][user2].deposit, "New deposit must be greater than the existing deposit");
+        channels[user1][user2].deposit += newDeposit;
+    }
+    // Execute transaction function
+    function executeTransaction(address user1, address user2, address recipient, uint value, bytes memory signature1, bytes memory signature2) private {
+        require(channels[user1][user2].deposit >= value, "Insufficient funds in the channel");
+require(value >= fee, "Transaction value is too low");
+        require(value <= channels[user1][user2].deposit, "Transaction value exceeds the deposit in the channel");
+        require(ecrecover(keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(abi.encodePacked(user1, user2, recipient, value)))), signature1) == user1, "Invalid signature from user1");
+        require(ecrecover(keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(abi.encodePacked(user1, user2, recipient, value)))), signature2) == user2, "Invalid signature from user2");
+        channels[user1][user2].deposit -= value;
+        token.transfer(recipient, value);
+    }
+    //function to check the role of user
+    function checkRole() public view returns(bool) {
+        return admin[msg.sender];
+    }
+}
+
+
 
