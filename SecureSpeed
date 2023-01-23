@@ -390,6 +390,77 @@ require(value >= fee, "Transaction value is too low");
         return admin[msg.sender];
     }
 }
+pragma solidity ^0.11.0;
+
+contract SecureSpeed {
+    // Payment channel data structure
+    struct Channel {
+        address user1;
+        address user2;
+        uint deposit;
+        bool closed;
+    }
+    mapping (address => mapping (address => Channel)) private channels;
+
+    // External Oracle
+    address externalOracle;
+
+    //Transaction fee
+    uint fee = 0.01 ether;
+
+    // ZKSNARKs setup
+    struct Params {
+        bytes[32] a;
+        bytes[32] b;
+        bytes[32] c;
+    }
+    Params public params;
+
+    constructor(address _externalOracle) public {
+        externalOracle = _externalOracle;
+        //Generate ZKSNARKs parameters
+        (params.a, params.b, params.c) = generateParams();
+    }
+
+    function generateParams() private pure returns (bytes[32] memory a, bytes[32] memory b, bytes[32] memory c) {
+        // Code to generate ZKSNARKs parameters, such as using a trusted setup ceremony
+        return (a, b, c);
+    }
+
+    function deposit(address user, uint value) public {
+        require(value > 0, "Deposit must be greater than 0");
+        require(msg.sender == user1, "Only user1 can deposit funds in the channel");
+        bytes memory proof = createProof(user1, user2, value);
+        openChannel(msg.sender, user, value, proof);
+    }
+
+    function createProof(address user1, address user2, uint value) private pure returns (bytes memory) {
+        // Code to create a ZKSNARKs proof
+        return proof;
+    }
+
+    function openChannel(address user1, address user2, uint value, bytes memory proof) private {
+        require(verifyProof(proof, params.a, params.b, params.c), "Invalid proof provided");
+        channels[user1][user2] = Channel({
+            user1: user1,
+            user2: user2,
+            deposit: value,
+            closed: false
+        });
+    }
+
+    function verifyProof(bytes memory proof, bytes[32] memory a, bytes[32] memory b, bytes[32] memory c) private pure returns (bool) {
+        // Code to verify the ZKSNARKs proof
+        return true;
+    }
+
+    // Withdraw function
+    function withdraw(address user, uint value) public {
+        // Rest of the code for the withdraw function
+    }
+
+    // Other functions such as updateDeposit, initiateTransaction, resolveDispute, closeChannel
+}
 
 
 
